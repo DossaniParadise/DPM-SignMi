@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>DPM Email Signature</title>
+<meta name="description" content="Pick your name, copy your Dossani Paradise Management email signature, and paste it into Outlook." />
+<style>
+  :root {
+    --navy: #1c1475;
+    --red: #e50417;
+    --ink: #1b1e28;
+    --muted: #66708a;
+    --bg: #f3f4f8;
+    --card: #ffffff;
+    --line: #e2e5ee;
+    --font-ui: "Segoe UI", Tahoma, Arial, sans-serif;
+    --font-display: Georgia, "Times New Roman", Times, serif;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font: 15px/1.5 var(--font-ui);
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 720px; margin: 0 auto; padding: 40px 20px 80px; }
+
+  .eyebrow {
+    font: 600 12px/1 var(--font-ui);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  h1 {
+    font: 400 34px/1.15 var(--font-display);
+    color: var(--navy);
+    margin: 10px 0 0;
+  }
+  .rule { width: 44px; height: 3px; background: var(--red); border: 0; margin: 16px 0 8px; }
+  .lede { color: var(--muted); margin: 8px 0 28px; max-width: 52ch; }
+
+  label { display: block; font: 600 13px/1 var(--font-ui); color: var(--ink); margin: 0 0 6px; }
+  .picker { display: grid; gap: 12px; margin-bottom: 10px; }
+  input[type="search"], select, .manual input {
+    width: 100%;
+    font: 15px var(--font-ui);
+    color: var(--ink);
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 11px 12px;
+  }
+  input:focus, select:focus, button:focus-visible, summary:focus-visible {
+    outline: 2px solid var(--navy);
+    outline-offset: 1px;
+  }
+  select { appearance: auto; }
+
+  .status {
+    font: 13px var(--font-ui);
+    color: var(--muted);
+    margin: 2px 0 24px;
+    min-height: 1.2em;
+  }
+  .status.error { color: #b3261e; }
+  .status a { color: var(--navy); }
+
+  /* Email-frame preview */
+  .frame {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    box-shadow: 0 8px 28px rgba(28, 20, 117, 0.07);
+    overflow: hidden;
+  }
+  .frame-bar {
+    display: flex; align-items: center; gap: 8px;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--line);
+    background: #fafbfe;
+  }
+  .dot { width: 9px; height: 9px; border-radius: 50%; background: #d6d9e4; }
+  .frame-bar span { font: 12px var(--font-ui); color: var(--muted); margin-left: 6px; }
+  .frame-meta {
+    padding: 12px 22px 0;
+    font: 13px var(--font-ui); color: var(--muted);
+  }
+  .frame-meta p { margin: 0 0 4px; }
+  .frame-body { padding: 8px 22px 26px; }
+  .frame-body .msg p { margin: 0 0 10px; font: 15px var(--font-display); color: #222; }
+  #sig { margin-top: 6px; }
+  .empty {
+    padding: 8px 0 14px;
+    color: var(--muted);
+    font: 15px var(--font-ui);
+  }
+
+  .actions { display: flex; flex-wrap: wrap; gap: 10px; margin: 18px 0 6px; }
+  button {
+    font: 600 15px var(--font-ui);
+    border-radius: 8px;
+    padding: 12px 20px;
+    cursor: pointer;
+    border: 1px solid var(--navy);
+  }
+  .primary { background: var(--navy); color: #fff; }
+  .primary:hover { background: #241a8f; }
+  .ghost { background: transparent; color: var(--navy); }
+  .ghost:hover { background: #eceafd; }
+  button:disabled { opacity: 0.45; cursor: default; }
+  .copied { color: #0a7a3d; font: 600 14px/1 var(--font-ui); align-self: center; }
+
+  details {
+    margin-top: 26px;
+    border-top: 1px solid var(--line);
+    padding-top: 14px;
+  }
+  summary { cursor: pointer; font: 600 14px var(--font-ui); color: var(--navy); }
+  details .inner { padding: 14px 0 0; color: var(--ink); font-size: 14px; }
+  details ol { margin: 8px 0 14px 20px; padding: 0; }
+  details li { margin: 4px 0; }
+  .manual .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+  .manual .grid .full { grid-column: 1 / -1; }
+  @media (max-width: 540px) { .manual .grid { grid-template-columns: 1fr; } }
+  footer { margin-top: 40px; font: 12px var(--font-ui); color: var(--muted); }
+  @media (prefers-reduced-motion: no-preference) {
+    .frame { transition: box-shadow 0.2s ease; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="eyebrow">Dossani Paradise Management</p>
+  <h1>Email signature</h1>
+  <hr class="rule" />
+  <p class="lede">Pick your name from the directory, copy your signature, and paste it into Outlook. The preview below is exactly what recipients see.</p>
+
+  <div class="picker">
+    <div>
+      <label for="search">Find your name</label>
+      <input id="search" type="search" placeholder="Type a name, store, or title…" autocomplete="off" />
+    </div>
+    <div>
+      <label for="who">Directory</label>
+      <select id="who" size="1">
+        <option value="">Loading directory…</option>
+      </select>
+    </div>
+  </div>
+  <p id="status" class="status">Connecting to the DPM directory…</p>
+
+  <div class="frame">
+    <div class="frame-bar"><i class="dot"></i><i class="dot"></i><i class="dot"></i><span>New message — Outlook</span></div>
+    <div class="frame-meta">
+      <p>To: customer@example.com</p>
+      <p>Subject: Following up</p>
+    </div>
+    <div class="frame-body">
+      <div class="msg"><p>Hi there,</p><p>Thanks for your time today — here are the next steps we discussed.</p></div>
+      <div id="sig"><p class="empty">Your signature will appear here once you pick a name.</p></div>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button id="copy" class="primary" disabled>Copy signature</button>
+    <button id="copyHtml" class="ghost" disabled>Copy HTML code</button>
+    <span id="copied" class="copied" hidden>Copied — now paste it into Outlook.</span>
+  </div>
+
+  <details class="manual">
+    <summary>Not in the list? Enter your details</summary>
+    <div class="inner">
+      <div class="grid">
+        <div><label for="mName">Full name</label><input id="mName" /></div>
+        <div><label for="mTitle">Job title</label><input id="mTitle" /></div>
+        <div class="full"><label for="mEmail">Email</label><input id="mEmail" type="email" /></div>
+        <div><label for="mPhone">Phone (an extension like 203 also works)</label><input id="mPhone" /></div>
+        <div><label for="mStore">Store or department (optional)</label><input id="mStore" /></div>
+        <div class="full"><label for="mStreet">Street address (leave blank for the Grapevine office)</label><input id="mStreet" /></div>
+        <div class="full"><label for="mCity">City, State, ZIP</label><input id="mCity" /></div>
+      </div>
+    </div>
+  </details>
+
+  <details>
+    <summary>How to paste it into Outlook</summary>
+    <div class="inner">
+      <strong>Outlook on Windows (new or classic)</strong>
+      <ol>
+        <li>Select "Copy signature" above.</li>
+        <li>In Outlook go to Settings (gear) → Accounts → Signatures, or File → Options → Mail → Signatures.</li>
+        <li>Select New, name it "DPM", click inside the editing box, and press Ctrl+V.</li>
+        <li>Set it as the default for new messages and replies, then select Save.</li>
+      </ol>
+      <strong>Outlook on the web</strong>
+      <ol>
+        <li>Gear icon → Account → Signatures.</li>
+        <li>Paste with Ctrl+V (Cmd+V on Mac) and select Save.</li>
+      </ol>
+      <strong>Outlook on Mac</strong>
+      <ol>
+        <li>Outlook → Settings → Signatures → +, paste with Cmd+V, close to save.</li>
+      </ol>
+      <strong>iPhone / Android</strong>
+      <ol>
+        <li>The Outlook mobile app only supports plain-text signatures. Paste there and the formatting is removed — that is an Outlook limit, not a problem with your copy. Set the full signature on desktop or the web and it applies when you send from there.</li>
+      </ol>
+    </div>
+  </details>
+
+  <footer>Directory data comes live from DPM FindMi. If your details are wrong here, ask IT to fix them in FindMi and this page updates automatically.</footer>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ── DPM constants (mirrors the original app) ─────────────────────── */
+  var API_URL = "https://alignment-api-khaki.vercel.app/api/dpm-alignment";
+  var LOGO_DATA = "data:image/png;base64,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";
+  var NAVY = "#1c1475";
+  var FONT = "'Times New Roman', Times, serif";
+  var COMPANY_STREET = "320 E. Northwest Highway Suite 100";
+  var COMPANY_CITY = "Grapevine, TX, 76051";
+  var MAIN_PHONE = "817-442-1159";
+  var WEBSITE_HREF = "https://www.dossaniparadise.com";
+  var WEBSITE_LABEL = "www.DossaniParadise.com";
+  var DISCLAIMER = 'The information contained in this electronic message and any attachments (the "Message") is intended for one or more specific individuals or entities, and may be confidential, privileged, proprietary, or otherwise protected by law. If you are not the intended recipient, please notify the sender immediately, delete the Message, and do not read, copy, distribute, or otherwise use it. Unauthorized use or disclosure may be prohibited.';
+  /* Font scale for base size 12, as in the original */
+  var SZ = { body: 12, name: 16, thankYou: 15, title: 13, disclaimer: 9 };
+  var LOGO_WIDTH = 175;
+
+  /* ── Helpers ported from the original app ─────────────────────────── */
+  function esc(v) {
+    return String(v == null ? "" : v)
+      .replace(/&/g, "&amp;").replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  }
+  function unshout(t) {
+    var v = String(t || "").trim();
+    if (!v) return v;
+    var letters = v.replace(/[^A-Za-z]/g, "");
+    if (letters.length < 2) return v;
+    var upper = letters.replace(/[^A-Z]/g, "").length;
+    var lower = letters.replace(/[^a-z]/g, "").length;
+    if (upper < letters.length * 0.85 || lower > letters.length * 0.15) return v;
+    return v.toLowerCase()
+      .replace(/\b([a-z])/g, function (m) { return m.toUpperCase(); })
+      .replace(/\b(Llc|Llp|Inc|Ltd|Vp|Gm|Agm|Dpm|Ljs|Kfc|Hq|Ii|Iii)\b/g, function (m) { return m.toUpperCase(); });
+  }
+  function digitsOnly(v) { return String(v || "").replace(/\D/g, ""); }
+  function dash10(d) { return d.slice(0, 3) + "-" + d.slice(3, 6) + "-" + d.slice(6, 10); }
+  function formatPhone(raw) {
+    var t = String(raw || "").trim();
+    if (!t) return "";
+    if (/^\d{2,4}$/.test(t)) return MAIN_PHONE + " x" + t;
+    var m = t.match(/^(.*?)(?:\s*[,\/]\s*|\s*(?:ext\.?|x|extension)\s*)(\d{2,4})\s*$/i);
+    if (m) {
+      var main = digitsOnly(m[1]);
+      if (main.length === 10) return dash10(main) + " x" + m[2];
+      if (main.length === 11 && main.charAt(0) === "1") return dash10(main.slice(1)) + " x" + m[2];
+      if (!main) return MAIN_PHONE + " x" + m[2];
+    }
+    var d = digitsOnly(t);
+    if (d.length === 10) return dash10(d);
+    if (d.length === 11 && d.charAt(0) === "1") return dash10(d.slice(1));
+    var ten = d.match(/(\d{10})/);
+    if (ten && d.length <= 11) return dash10(ten[1]);
+    return t;
+  }
+  function splitAddress(address) {
+    var cleaned = String(address || "").trim();
+    if (!cleaned) return { street: "", city: "" };
+    var parts = cleaned.split(",").map(function (p) { return p.trim(); }).filter(Boolean);
+    if (parts.length >= 3) {
+      return { street: parts.slice(0, -2).join(", "), city: parts.slice(-2).join(", ") };
+    }
+    if (parts.length === 2) return { street: parts[0], city: parts[1] };
+    return { street: cleaned, city: "" };
+  }
+
+  /* ── Parse the FindMi alignment payload into people + stores ──────── */
+  var PEOPLE_BUCKETS = [
+    ["vps", "Leadership", "VP of Operations"],
+    ["directors", "Directors of Operations", "Director of Operations"],
+    ["areaCoaches", "District Managers", "District Manager"],
+    ["repairTechnicians", "Repair Technicians", "Repair Technician"],
+    ["admins", "Support Staff", "Administrator"]
+  ];
+  var ADMIN_SKIP = { appMeta: 1, techLocations: 1, techMeta: 1 };
+
+  function personFrom(key, raw, fallbackTitle) {
+    if (!raw || typeof raw !== "object" || Array.isArray(raw)) return null;
+    if (ADMIN_SKIP[key]) return null;
+    var name = String(raw.name || "").trim();
+    var email = String(raw.email || "").trim();
+    if (!name && !email) return null;
+    var title = String(raw.jobTitle || raw.title || raw.position || raw.role || "").trim();
+    if (!title && raw.tier) title = "Admin (" + String(raw.tier).trim() + ")";
+    if (!title) title = fallbackTitle;
+    return {
+      name: unshout(name || email),
+      title: unshout(title),
+      email: email,
+      phone: formatPhone(raw.phone || raw.replyNumber || ""),
+      street: "", city: "", storeLine: ""
+    };
+  }
+
+  function storeEntry(raw) {
+    var storeName = unshout(String(raw.storeName || "").trim());
+    var manager = String(raw.storeManager || "").trim();
+    var agm = String(raw.assistantManager || "").trim();
+    var email = String(raw.email || "").trim();
+    if (!storeName && !email) return null;
+    var name = manager || agm || storeName || "Store";
+    var title = manager ? "Store Manager" : (agm ? "Assistant Store Manager" : "Store");
+    var addr = splitAddress(raw.address);
+    return {
+      name: unshout(name),
+      title: title,
+      email: email,
+      phone: formatPhone(raw.phone || ""),
+      street: addr.street,
+      city: addr.city,
+      storeLine: storeName,
+      label: storeName + (manager ? " — " + unshout(manager) : "")
+    };
+  }
+
+  function parsePayload(data) {
+    var groups = [];
+    PEOPLE_BUCKETS.forEach(function (bucket) {
+      var src = data[bucket[0]];
+      if (!src || typeof src !== "object") return;
+      var people = Object.keys(src)
+        .map(function (k) { return personFrom(k, src[k], bucket[2]); })
+        .filter(Boolean)
+        .sort(function (a, b) { return a.name.localeCompare(b.name, undefined, { sensitivity: "base" }); });
+      if (people.length) groups.push({ label: bucket[1], people: people });
+    });
+    var restaurants = data.restaurants;
+    if (restaurants && typeof restaurants === "object") {
+      var stores = Object.keys(restaurants)
+        .map(function (k) { return storeEntry(restaurants[k]); })
+        .filter(Boolean)
+        .sort(function (a, b) { return (a.storeLine || a.name).localeCompare(b.storeLine || b.name, undefined, { sensitivity: "base" }); });
+      if (stores.length) groups.push({ label: "Stores", people: stores });
+    }
+    return groups;
+  }
+
+  /* ── Render the corporate signature (t-dossani template) ──────────── */
+  function renderSignature(u) {
+    var name = unshout(u.name);
+    var title = unshout(u.title);
+    var street = (u.street || "").trim() || ((u.city || "").trim() ? "" : COMPANY_STREET);
+    var city = (u.city || "").trim() || ((u.street || "").trim() ? "" : COMPANY_CITY);
+    var phone = formatPhone(u.phone);
+    var storeLine = u.storeLine && u.storeLine.toLowerCase() !== name.toLowerCase() ? u.storeLine : "";
+    function row(css, inner) { return '<tr><td style="' + css + '">' + inner + "</td></tr>"; }
+    var base = "font:" + SZ.body + "px " + FONT + ";color:" + NAVY + ";";
+    var html = '<table cellpadding="0" cellspacing="0" border="0" style="font-family:' + FONT + ";color:" + NAVY + ';max-width:560px;">';
+    html += row("font:700 " + SZ.thankYou + "px " + FONT + ";color:" + NAVY + ";padding-bottom:8px;", "Thank You,");
+    html += row("font:700 " + SZ.name + "px " + FONT + ";color:" + NAVY + ";", esc(name));
+    if (title) html += row("font:italic " + SZ.title + "px " + FONT + ";color:" + NAVY + ";padding-top:2px;", esc(title));
+    if (storeLine) html += row(base + "padding-top:2px;", esc(storeLine));
+    html += '<tr><td><table cellpadding="0" cellspacing="0" border="0" style="margin-top:10px;margin-bottom:8px;"><tr><td style="vertical-align:middle;"><img src="' + LOGO_DATA + '" width="' + LOGO_WIDTH + '" alt="Dossani Paradise Management" style="display:block;border:0;outline:none;text-decoration:none;width:' + LOGO_WIDTH + "px;height:auto;max-width:" + LOGO_WIDTH + 'px;" /></td></tr></table></td></tr>';
+    if (street) html += row(base, esc(street));
+    if (city) html += row(base, esc(city));
+    if (phone) html += row(base, esc(phone));
+    if (u.email) html += row(base + "padding-top:2px;", 'Email: <a href="mailto:' + esc(u.email) + '" style="color:' + NAVY + ';text-decoration:underline;">' + esc(u.email) + "</a>");
+    html += row(base, 'Website: <a href="' + WEBSITE_HREF + '" style="color:' + NAVY + ';text-decoration:underline;">' + esc(WEBSITE_LABEL) + "</a>");
+    html += row("padding-top:12px;font:" + SZ.disclaimer + "px " + FONT + ";color:#333333;max-width:520px;line-height:1.35;", esc(DISCLAIMER));
+    html += "</table>";
+    return html;
+  }
+
+  function plainText(u) {
+    var name = unshout(u.name);
+    var street = (u.street || "").trim() || ((u.city || "").trim() ? "" : COMPANY_STREET);
+    var city = (u.city || "").trim() || ((u.street || "").trim() ? "" : COMPANY_CITY);
+    var storeLine = u.storeLine && u.storeLine.toLowerCase() !== name.toLowerCase() ? u.storeLine : "";
+    return ["Thank You,", name, unshout(u.title), storeLine, street, city, formatPhone(u.phone),
+      u.email ? "Email: " + u.email : "", "Website: " + WEBSITE_LABEL, "", DISCLAIMER]
+      .filter(function (l) { return l !== ""; }).join("\n");
+  }
+
+  /* ── Page wiring ──────────────────────────────────────────────────── */
+  var $ = function (id) { return document.getElementById(id); };
+  var groups = [];
+  var flat = [];
+  var current = null;
+
+  function fillSelect(filter) {
+    var sel = $("who");
+    var prev = sel.value;
+    sel.innerHTML = "";
+    var q = (filter || "").trim().toLowerCase();
+    var def = document.createElement("option");
+    def.value = "";
+    def.textContent = q ? "Matches — pick one" : "Pick your name…";
+    sel.appendChild(def);
+    var shown = 0;
+    groups.forEach(function (g, gi) {
+      var matches = g.people.map(function (p, pi) { return { p: p, key: gi + ":" + pi }; })
+        .filter(function (e) {
+          if (!q) return true;
+          var hay = ((e.p.label || e.p.name) + " " + e.p.title + " " + e.p.email).toLowerCase();
+          return hay.indexOf(q) !== -1;
+        });
+      if (!matches.length) return;
+      var og = document.createElement("optgroup");
+      og.label = g.label;
+      matches.forEach(function (e) {
+        var o = document.createElement("option");
+        o.value = e.key;
+        o.textContent = e.p.label || (e.p.name + (e.p.title ? " — " + e.p.title : ""));
+        og.appendChild(o);
+        shown++;
+      });
+      sel.appendChild(og);
+    });
+    if (prev && sel.querySelector('option[value="' + prev + '"]')) sel.value = prev;
+    if (q && shown === 1) {
+      sel.selectedIndex = 1;
+      onPick();
+    }
+    return shown;
+  }
+
+  function show(u) {
+    current = u;
+    $("sig").innerHTML = renderSignature(u);
+    $("copy").disabled = false;
+    $("copyHtml").disabled = false;
+    $("copied").hidden = true;
+  }
+
+  function onPick() {
+    var v = $("who").value;
+    if (!v) return;
+    var parts = v.split(":");
+    var u = groups[+parts[0]] && groups[+parts[0]].people[+parts[1]];
+    if (u) show(u);
+  }
+
+  function manualUser() {
+    return {
+      name: $("mName").value, title: $("mTitle").value, email: $("mEmail").value,
+      phone: $("mPhone").value, storeLine: $("mStore").value,
+      street: $("mStreet").value, city: $("mCity").value
+    };
+  }
+
+  function flashCopied(btn) {
+    $("copied").hidden = false;
+    btn.blur();
+    setTimeout(function () { $("copied").hidden = true; }, 4000);
+  }
+
+  function copyRich() {
+    if (!current) return;
+    var html = renderSignature(current);
+    var text = plainText(current);
+    if (navigator.clipboard && window.ClipboardItem) {
+      var item = new ClipboardItem({
+        "text/html": new Blob([html], { type: "text/html" }),
+        "text/plain": new Blob([text], { type: "text/plain" })
+      });
+      navigator.clipboard.write([item]).then(function () { flashCopied($("copy")); }, copyFallback);
+    } else {
+      copyFallback();
+    }
+    function copyFallback() {
+      var range = document.createRange();
+      range.selectNodeContents($("sig"));
+      var selection = window.getSelection();
+      selection.removeAllRanges();
+      selection.addRange(range);
+      try { document.execCommand("copy"); flashCopied($("copy")); } catch (e) {}
+      selection.removeAllRanges();
+    }
+  }
+
+  function copyHtmlSource() {
+    if (!current) return;
+    var html = renderSignature(current);
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(html).then(function () { flashCopied($("copyHtml")); });
+    }
+  }
+
+  function loadDirectory() {
+    var status = $("status");
+    status.className = "status";
+    status.textContent = "Connecting to the DPM directory…";
+    fetch(API_URL, { cache: "no-store" })
+      .then(function (r) {
+        if (!r.ok) throw new Error("HTTP " + r.status);
+        return r.json();
+      })
+      .then(function (data) {
+        groups = parsePayload(data && typeof data === "object" ? data : {});
+        var total = groups.reduce(function (n, g) { return n + g.people.length; }, 0);
+        if (!total) throw new Error("empty");
+        fillSelect("");
+        status.textContent = "Directory loaded — " + total + " people and stores, live from FindMi.";
+      })
+      .catch(function () {
+        status.className = "status error";
+        status.innerHTML = 'The directory did not load. <a href="#" id="retry">Try again</a> or enter your details below.';
+        $("who").innerHTML = '<option value="">Directory unavailable</option>';
+        var r = $("retry");
+        if (r) r.addEventListener("click", function (e) { e.preventDefault(); loadDirectory(); });
+      });
+  }
+
+  $("who").addEventListener("change", onPick);
+  $("search").addEventListener("input", function () { fillSelect(this.value); });
+  $("copy").addEventListener("click", copyRich);
+  $("copyHtml").addEventListener("click", copyHtmlSource);
+  ["mName", "mTitle", "mEmail", "mPhone", "mStore", "mStreet", "mCity"].forEach(function (id) {
+    $(id).addEventListener("input", function () {
+      var u = manualUser();
+      if ((u.name || "").trim()) show(u);
+    });
+  });
+
+  loadDirectory();
+})();
+</script>
+</body>
+</html>
