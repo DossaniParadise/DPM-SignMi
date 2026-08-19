@@ -43,7 +43,7 @@
 
   label { display: block; font: 600 13px/1 var(--font-ui); color: var(--ink); margin: 0 0 6px; }
   .picker { display: grid; gap: 12px; margin-bottom: 10px; }
-  input[type="search"], select, .manual input {
+  input[type="search"], select {
     width: 100%;
     font: 15px var(--font-ui);
     color: var(--ink);
@@ -57,6 +57,16 @@
     outline-offset: 1px;
   }
   select { appearance: auto; }
+  #who { padding: 6px; height: 300px; }
+  #who option { padding: 8px 10px; border-radius: 6px; font: 15px var(--font-ui); }
+  #who option:checked { background: var(--navy); color: #fff; }
+  #who optgroup { font: 600 11px var(--font-ui); letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); padding-top: 8px; }
+  .step {
+    display: inline-block; width: 20px; height: 20px; margin-right: 7px;
+    background: var(--navy); color: #fff; border-radius: 50%;
+    font: 700 12px/20px var(--font-ui); text-align: center;
+  }
+  .hint { font: 13px var(--font-ui); color: var(--muted); margin: 6px 0 0; min-height: 1.2em; }
 
   .status {
     font: 13px var(--font-ui);
@@ -107,8 +117,6 @@
   }
   .primary { background: var(--navy); color: #fff; }
   .primary:hover { background: #241a8f; }
-  .ghost { background: transparent; color: var(--navy); }
-  .ghost:hover { background: #eceafd; }
   button:disabled { opacity: 0.45; cursor: default; }
   .copied { color: #0a7a3d; font: 600 14px/1 var(--font-ui); align-self: center; }
 
@@ -121,9 +129,26 @@
   details .inner { padding: 14px 0 0; color: var(--ink); font-size: 14px; }
   details ol { margin: 8px 0 14px 20px; padding: 0; }
   details li { margin: 4px 0; }
-  .manual .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
-  .manual .grid .full { grid-column: 1 / -1; }
-  @media (max-width: 540px) { .manual .grid { grid-template-columns: 1fr; } }
+  .actions { position: relative; }
+  .coach {
+    position: absolute; left: 0; bottom: calc(100% + 12px);
+    max-width: 340px;
+    background: var(--navy); color: #fff;
+    font: 14px/1.45 var(--font-ui);
+    padding: 12px 14px; border-radius: 10px;
+    box-shadow: 0 10px 24px rgba(28, 20, 117, 0.35);
+    z-index: 5;
+  }
+  .coach::after {
+    content: ""; position: absolute; top: 100%; left: 46px;
+    border: 8px solid transparent; border-top-color: var(--navy);
+  }
+  .pulse { animation: pulse 1.1s ease-out 4; }
+  @keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(28, 20, 117, 0.55); }
+    100% { box-shadow: 0 0 0 14px rgba(28, 20, 117, 0); }
+  }
+  @media (prefers-reduced-motion: reduce) { .pulse { animation: none; } }
   footer { margin-top: 40px; font: 12px var(--font-ui); color: var(--muted); }
   @media (prefers-reduced-motion: no-preference) {
     .frame { transition: box-shadow 0.2s ease; }
@@ -139,12 +164,13 @@
 
   <div class="picker">
     <div>
-      <label for="search">Find your name</label>
-      <input id="search" type="search" placeholder="Type a name, store, or title…" autocomplete="off" />
+      <label for="search"><span class="step">1</span>Type your name (or your store)</label>
+      <input id="search" type="search" placeholder="Start typing to narrow the list below…" autocomplete="off" />
+      <p id="hint" class="hint"></p>
     </div>
     <div>
-      <label for="who">Directory</label>
-      <select id="who" size="1">
+      <label for="who"><span class="step">2</span>Click your name in this list</label>
+      <select id="who" size="10">
         <option value="">Loading directory…</option>
       </select>
     </div>
@@ -164,25 +190,10 @@
   </div>
 
   <div class="actions">
-    <button id="copy" class="primary" disabled>Copy signature</button>
-    <button id="copyHtml" class="ghost" disabled>Copy HTML code</button>
+    <div id="coach" class="coach" hidden></div>
+    <button id="copy" class="primary" disabled><span class="step" style="background:#fff;color:var(--navy);">3</span>Copy signature</button>
     <span id="copied" class="copied" hidden>Copied — now paste it into Outlook.</span>
   </div>
-
-  <details class="manual">
-    <summary>Not in the list? Enter your details</summary>
-    <div class="inner">
-      <div class="grid">
-        <div><label for="mName">Full name</label><input id="mName" /></div>
-        <div><label for="mTitle">Job title</label><input id="mTitle" /></div>
-        <div class="full"><label for="mEmail">Email</label><input id="mEmail" type="email" /></div>
-        <div><label for="mPhone">Phone (an extension like 203 also works)</label><input id="mPhone" /></div>
-        <div><label for="mStore">Store or department (optional)</label><input id="mStore" /></div>
-        <div class="full"><label for="mStreet">Street address (leave blank for the Grapevine office)</label><input id="mStreet" /></div>
-        <div class="full"><label for="mCity">City, State, ZIP</label><input id="mCity" /></div>
-      </div>
-    </div>
-  </details>
 
   <details>
     <summary>How to paste it into Outlook</summary>
@@ -198,10 +209,6 @@
       <ol>
         <li>Gear icon → Account → Signatures.</li>
         <li>Paste with Ctrl+V (Cmd+V on Mac) and select Save.</li>
-      </ol>
-      <strong>Outlook on Mac</strong>
-      <ol>
-        <li>Outlook → Settings → Signatures → +, paste with Cmd+V, close to save.</li>
       </ol>
       <strong>iPhone / Android</strong>
       <ol>
@@ -399,10 +406,6 @@
     var prev = sel.value;
     sel.innerHTML = "";
     var q = (filter || "").trim().toLowerCase();
-    var def = document.createElement("option");
-    def.value = "";
-    def.textContent = q ? "Matches — pick one" : "Pick your name…";
-    sel.appendChild(def);
     var shown = 0;
     groups.forEach(function (g, gi) {
       var matches = g.people.map(function (p, pi) { return { p: p, key: gi + ":" + pi }; })
@@ -424,9 +427,17 @@
       sel.appendChild(og);
     });
     if (prev && sel.querySelector('option[value="' + prev + '"]')) sel.value = prev;
-    if (q && shown === 1) {
-      sel.selectedIndex = 1;
+    var hint = $("hint");
+    if (!shown) {
+      hint.textContent = q ? 'No one matches "' + filter.trim() + '" — check the spelling, or ask IT to add you to FindMi.' : "";
+    } else if (q && shown === 1) {
+      sel.selectedIndex = 0;
       onPick();
+      hint.textContent = "Found you — your signature is ready below.";
+    } else if (q) {
+      hint.textContent = shown + " matches — click yours in the list.";
+    } else {
+      hint.textContent = shown + " people and stores in the directory.";
     }
     return shown;
   }
@@ -435,7 +446,6 @@
     current = u;
     $("sig").innerHTML = renderSignature(u);
     $("copy").disabled = false;
-    $("copyHtml").disabled = false;
     $("copied").hidden = true;
   }
 
@@ -445,14 +455,6 @@
     var parts = v.split(":");
     var u = groups[+parts[0]] && groups[+parts[0]].people[+parts[1]];
     if (u) show(u);
-  }
-
-  function manualUser() {
-    return {
-      name: $("mName").value, title: $("mTitle").value, email: $("mEmail").value,
-      phone: $("mPhone").value, storeLine: $("mStore").value,
-      street: $("mStreet").value, city: $("mCity").value
-    };
   }
 
   function flashCopied(btn) {
@@ -485,14 +487,6 @@
     }
   }
 
-  function copyHtmlSource() {
-    if (!current) return;
-    var html = renderSignature(current);
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(html).then(function () { flashCopied($("copyHtml")); });
-    }
-  }
-
   function loadDirectory() {
     var status = $("status");
     status.className = "status";
@@ -521,15 +515,50 @@
   $("who").addEventListener("change", onPick);
   $("search").addEventListener("input", function () { fillSelect(this.value); });
   $("copy").addEventListener("click", copyRich);
-  $("copyHtml").addEventListener("click", copyHtmlSource);
-  ["mName", "mTitle", "mEmail", "mPhone", "mStore", "mStreet", "mCity"].forEach(function (id) {
-    $(id).addEventListener("input", function () {
-      var u = manualUser();
-      if ((u.name || "").trim()) show(u);
-    });
+
+  /* ── Coach people away from select-and-copy on the preview ────────── */
+  var coachTimer = null;
+  function coach(msg) {
+    var el = $("coach");
+    el.textContent = msg;
+    el.hidden = false;
+    var btn = $("copy");
+    btn.classList.remove("pulse");
+    void btn.offsetWidth; /* restart animation */
+    btn.classList.add("pulse");
+    clearTimeout(coachTimer);
+    coachTimer = setTimeout(function () {
+      el.hidden = true;
+      btn.classList.remove("pulse");
+    }, 6000);
+  }
+  function selectionInPreview() {
+    var s = window.getSelection();
+    if (!s || s.isCollapsed || !s.anchorNode) return false;
+    var frame = document.querySelector(".frame-body");
+    var node = s.anchorNode.nodeType === 1 ? s.anchorNode : s.anchorNode.parentNode;
+    return frame.contains(node);
+  }
+  var selTimer = null;
+  document.addEventListener("selectionchange", function () {
+    clearTimeout(selTimer);
+    selTimer = setTimeout(function () {
+      if (!selectionInPreview()) return;
+      coach(current
+        ? "No need to select anything — the Copy signature button copies the whole thing, formatting included."
+        : "First pick your name from the list above, then use the Copy signature button.");
+    }, 500);
+  });
+  /* If they copy from the preview anyway, put the complete signature on the clipboard. */
+  document.querySelector(".frame-body").addEventListener("copy", function (e) {
+    if (!current || !e.clipboardData) return;
+    e.preventDefault();
+    e.clipboardData.setData("text/html", renderSignature(current));
+    e.clipboardData.setData("text/plain", plainText(current));
+    coach("We copied the complete signature for you — paste it into Outlook. Next time, just click Copy signature.");
   });
 
-  loadDirectory();
+    loadDirectory();
 })();
 </script>
 </body>
