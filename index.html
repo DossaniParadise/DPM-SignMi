@@ -334,11 +334,11 @@
 
   /* ── Parse the FindMi alignment payload into people + stores ──────── */
   var PEOPLE_BUCKETS = [
-    ["vps", "Leadership", "VP of Operations"],
+    ["vps", "Support Staff", "Support Staff"],
     ["directors", "Directors of Operations", "Director of Operations"],
     ["areaCoaches", "District Managers", "District Manager"],
-    ["repairTechnicians", "Repair Technicians", "Repair Technician"],
-    ["admins", "Support Staff", "Administrator"]
+    ["repairTechnicians", "Repair Technicians", "Repair Technician"]
+    /* `admins` holds app settings and sign-in accounts, not directory people. */
   ];
   var ADMIN_SKIP = { appMeta: 1, techLocations: 1, techMeta: 1 };
 
@@ -360,25 +360,49 @@
     };
   }
 
-  function storeEntry(raw) {
+  /* Managers on a store: FindMi keeps them in restaurants/<id>/managers
+     ([{name,title,phone}], titles GM / AGM / In Training). The old
+     storeManager / assistantManager fields are read ONLY when that list is
+     empty - they are no longer maintained, which is why signatures had gone
+     stale for anyone whose GM changed. */
+  function storeManagers(raw) {
+    var list = Array.isArray(raw.managers) ? raw.managers.filter(function (m) { return m && String(m.name || "").trim(); }) : [];
+    if (list.length) return list;
+    var out = [];
+    if (String(raw.storeManager || "").trim()) out.push({ name: raw.storeManager, title: "GM", phone: raw.managerCell });
+    if (String(raw.assistantManager || "").trim()) out.push({ name: raw.assistantManager, title: "AGM", phone: raw.assistantManagerCell });
+    return out;
+  }
+  function managerTitle(t) {
+    var k = String(t || "").trim().toLowerCase();
+    if (k === "gm") return "General Manager";
+    if (k === "agm") return "Assistant General Manager";
+    if (k === "in training") return "General Manager in Training";
+    return k ? unshout(String(t)) : "Store Manager";
+  }
+  var TITLE_RANK = { "gm": 0, "agm": 1, "in training": 2 };
+  function storeEntries(raw) {
     var storeName = unshout(String(raw.storeName || "").trim());
-    var manager = String(raw.storeManager || "").trim();
-    var agm = String(raw.assistantManager || "").trim();
     var email = String(raw.email || "").trim();
-    if (!storeName && !email) return null;
-    var name = manager || agm || storeName || "Store";
-    var title = manager ? "Store Manager" : (agm ? "Assistant Store Manager" : "Store");
+    if (!storeName && !email) return [];
     var addr = splitAddress(raw.address);
-    return {
-      name: unshout(name),
-      title: title,
-      email: email,
-      phone: formatPhone(raw.phone || ""),
-      street: addr.street,
-      city: addr.city,
-      storeLine: storeName,
-      label: storeName + (manager ? " — " + unshout(manager) : "")
-    };
+    var mgrs = storeManagers(raw).slice().sort(function (a, b) {
+      var ra = TITLE_RANK[String(a.title || "").toLowerCase()], rb = TITLE_RANK[String(b.title || "").toLowerCase()];
+      return ((ra === undefined ? 9 : ra) - (rb === undefined ? 9 : rb)) || String(a.name).localeCompare(String(b.name));
+    });
+    if (!mgrs.length) {
+      return [{ name: storeName || "Store", title: "Store", email: email, phone: formatPhone(raw.phone || ""),
+        street: addr.street, city: addr.city, storeLine: storeName, label: storeName }];
+    }
+    return mgrs.map(function (m) {
+      var nm = unshout(String(m.name).trim());
+      return {
+        name: nm, title: managerTitle(m.title), email: email,
+        phone: formatPhone(raw.phone || ""),      /* store line, not the personal cell */
+        street: addr.street, city: addr.city, storeLine: storeName,
+        label: nm + " — " + storeName
+      };
+    });
   }
 
   function parsePayload(data) {
@@ -394,11 +418,10 @@
     });
     var restaurants = data.restaurants;
     if (restaurants && typeof restaurants === "object") {
-      var stores = Object.keys(restaurants)
-        .map(function (k) { return storeEntry(restaurants[k]); })
-        .filter(Boolean)
-        .sort(function (a, b) { return (a.storeLine || a.name).localeCompare(b.storeLine || b.name, undefined, { sensitivity: "base" }); });
-      if (stores.length) groups.push({ label: "Stores", people: stores });
+      var stores = [];
+      Object.keys(restaurants).forEach(function (k) { stores = stores.concat(storeEntries(restaurants[k])); });
+      stores.sort(function (a, b) { return a.name.localeCompare(b.name, undefined, { sensitivity: "base" }); });
+      if (stores.length) groups.push({ label: "Store Managers", people: stores });
     }
     return groups;
   }
@@ -578,7 +601,7 @@
     var status = $("status");
     status.className = "status";
     status.textContent = "Connecting to the DPM directory…";
-    fetch(API_URL, { cache: "no-store" })
+    fetch(API_URL + (API_URL.indexOf("?") === -1 ? "?" : "&") + "_=" + Date.now(), { cache: "no-store" })
       .then(function (r) {
         if (!r.ok) throw new Error("HTTP " + r.status);
         return r.json();
