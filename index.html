@@ -306,13 +306,15 @@
   function brandCase(v) {
     return String(v == null ? "" : v)
       .replace(/(^|[^A-Za-z])bk([a-z])(?![a-z])/gi, function (m, pre, l) { return pre + "BK" + l.toUpperCase(); })
+      .replace(/(^|[^A-Za-z])bk(?=\d)/gi, function (m, pre) { return pre + "BK"; })
       .replace(/dossaniparadise/gi, "DossaniParadise");
   }
   /* Emails: "bk" + the first letter after it are capitalized even when a word
      follows (bkparis2390@ -> BKParis2390@), plus the DossaniParadise domain. */
   function brandEmail(v) {
     return brandCase(String(v == null ? "" : v).trim()
-      .replace(/^bk([a-z])/i, function (m, l) { return "BK" + l.toUpperCase(); }));
+      .replace(/^bk([a-z])/i, function (m, l) { return "BK" + l.toUpperCase(); })
+      .replace(/^bk(?=\d)/i, "BK"));
   }
   function digitsOnly(v) { return String(v || "").replace(/\D/g, ""); }
   function dash10(d) { return d.slice(0, 3) + "-" + d.slice(3, 6) + "-" + d.slice(6, 10); }
