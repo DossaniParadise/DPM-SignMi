@@ -301,6 +301,13 @@
       .replace(/\b([a-z])/g, function (m) { return m.toUpperCase(); })
       .replace(/\b(Llc|Llp|Inc|Ltd|Vp|Gm|Agm|Dpm|Ljs|Kfc|Hq|Ii|Iii)\b/g, function (m) { return m.toUpperCase(); });
   }
+  /* House capitalization: "BK" + the letter after it (BKX, BKX1234, bkx12@...) and
+     "DossaniParadise" always appear in brand case, whatever FindMi has stored. */
+  function brandCase(v) {
+    return String(v == null ? "" : v)
+      .replace(/(^|[^A-Za-z])bk([a-z])(?![a-z])/gi, function (m, pre, l) { return pre + "BK" + l.toUpperCase(); })
+      .replace(/dossaniparadise/gi, "DossaniParadise");
+  }
   function digitsOnly(v) { return String(v || "").replace(/\D/g, ""); }
   function dash10(d) { return d.slice(0, 3) + "-" + d.slice(3, 6) + "-" + d.slice(6, 10); }
   function formatPhone(raw) {
@@ -428,12 +435,12 @@
 
   /* ── Render the corporate signature (t-dossani template) ──────────── */
   function renderSignature(u) {
-    var name = unshout(u.name);
-    var title = unshout(u.title);
+    var name = brandCase(unshout(u.name));
+    var title = brandCase(unshout(u.title));
     var street = (u.street || "").trim() || ((u.city || "").trim() ? "" : COMPANY_STREET);
     var city = (u.city || "").trim() || ((u.street || "").trim() ? "" : COMPANY_CITY);
     var phone = formatPhone(u.phone);
-    var storeLine = u.storeLine && u.storeLine.toLowerCase() !== name.toLowerCase() ? u.storeLine : "";
+    var storeLine = u.storeLine && u.storeLine.toLowerCase() !== name.toLowerCase() ? brandCase(u.storeLine) : "";
     function row(css, inner) { return '<tr><td style="' + css + '">' + inner + "</td></tr>"; }
     var base = "font:" + SZ.body + " " + FONT + ";color:" + NAVY + ";";
     var html = '<table cellpadding="0" cellspacing="0" border="0" style="font-family:' + FONT + ";color:" + NAVY + ';max-width:560px;">';
@@ -445,7 +452,7 @@
     if (street) html += row(base, esc(street));
     if (city) html += row(base, esc(city));
     if (phone) html += row(base, esc(phone));
-    if (u.email) html += row(base + "padding-top:2px;", 'Email: <a href="mailto:' + esc(u.email) + '" style="color:' + NAVY + ';text-decoration:underline;">' + esc(u.email) + "</a>");
+    if (u.email) html += row(base + "padding-top:2px;", 'Email: <a href="mailto:' + esc(u.email) + '" style="color:' + NAVY + ';text-decoration:underline;">' + esc(brandCase(u.email)) + "</a>");
     html += row(base, 'Website: <a href="' + WEBSITE_HREF + '" style="color:' + NAVY + ';text-decoration:underline;">' + esc(WEBSITE_LABEL) + "</a>");
     html += row("padding-top:12px;font:" + SZ.disclaimer + " " + FONT + ";color:#333333;max-width:520px;line-height:1.35;", esc(DISCLAIMER));
     html += "</table>";
@@ -453,12 +460,12 @@
   }
 
   function plainText(u) {
-    var name = unshout(u.name);
+    var name = brandCase(unshout(u.name));
     var street = (u.street || "").trim() || ((u.city || "").trim() ? "" : COMPANY_STREET);
     var city = (u.city || "").trim() || ((u.street || "").trim() ? "" : COMPANY_CITY);
-    var storeLine = u.storeLine && u.storeLine.toLowerCase() !== name.toLowerCase() ? u.storeLine : "";
-    return ["Thank You,", name, unshout(u.title), storeLine, street, city, formatPhone(u.phone),
-      u.email ? "Email: " + u.email : "", "Website: " + WEBSITE_LABEL, "", DISCLAIMER]
+    var storeLine = u.storeLine && u.storeLine.toLowerCase() !== name.toLowerCase() ? brandCase(u.storeLine) : "";
+    return ["Thank You,", name, brandCase(unshout(u.title)), storeLine, street, city, formatPhone(u.phone),
+      u.email ? "Email: " + brandCase(u.email) : "", "Website: " + WEBSITE_LABEL, "", DISCLAIMER]
       .filter(function (l) { return l !== ""; }).join("\n");
   }
 
