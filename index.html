@@ -308,6 +308,12 @@
       .replace(/(^|[^A-Za-z])bk([a-z])(?![a-z])/gi, function (m, pre, l) { return pre + "BK" + l.toUpperCase(); })
       .replace(/dossaniparadise/gi, "DossaniParadise");
   }
+  /* Emails: "bk" + the first letter after it are capitalized even when a word
+     follows (bkparis2390@ -> BKParis2390@), plus the DossaniParadise domain. */
+  function brandEmail(v) {
+    return brandCase(String(v == null ? "" : v).trim()
+      .replace(/^bk([a-z])/i, function (m, l) { return "BK" + l.toUpperCase(); }));
+  }
   function digitsOnly(v) { return String(v || "").replace(/\D/g, ""); }
   function dash10(d) { return d.slice(0, 3) + "-" + d.slice(3, 6) + "-" + d.slice(6, 10); }
   function formatPhone(raw) {
@@ -452,7 +458,7 @@
     if (street) html += row(base, esc(street));
     if (city) html += row(base, esc(city));
     if (phone) html += row(base, esc(phone));
-    if (u.email) html += row(base + "padding-top:2px;", 'Email: <a href="mailto:' + esc(u.email) + '" style="color:' + NAVY + ';text-decoration:underline;">' + esc(brandCase(u.email)) + "</a>");
+    if (u.email) html += row(base + "padding-top:2px;", 'Email: <a href="mailto:' + esc(u.email) + '" style="color:' + NAVY + ';text-decoration:underline;">' + esc(brandEmail(u.email)) + "</a>");
     html += row(base, 'Website: <a href="' + WEBSITE_HREF + '" style="color:' + NAVY + ';text-decoration:underline;">' + esc(WEBSITE_LABEL) + "</a>");
     html += row("padding-top:12px;font:" + SZ.disclaimer + " " + FONT + ";color:#333333;max-width:520px;line-height:1.35;", esc(DISCLAIMER));
     html += "</table>";
@@ -465,7 +471,7 @@
     var city = (u.city || "").trim() || ((u.street || "").trim() ? "" : COMPANY_CITY);
     var storeLine = u.storeLine && u.storeLine.toLowerCase() !== name.toLowerCase() ? brandCase(u.storeLine) : "";
     return ["Thank You,", name, brandCase(unshout(u.title)), storeLine, street, city, formatPhone(u.phone),
-      u.email ? "Email: " + brandCase(u.email) : "", "Website: " + WEBSITE_LABEL, "", DISCLAIMER]
+      u.email ? "Email: " + brandEmail(u.email) : "", "Website: " + WEBSITE_LABEL, "", DISCLAIMER]
       .filter(function (l) { return l !== ""; }).join("\n");
   }
 
